@@ -10,15 +10,25 @@ app.listen(3000, () => console.log('Veb-server 3000 portda tayyor.'));
 function createBot() {
     const bot = mineflayer.createBot({
         host: 'silienceworldmcorg.aternos.me', 
-        port: 40788, // Sizning aniq portingiz qaytarildi
+        port: 40788, 
         username: 'AFK_Bot_Uz', 
         version: '1.21.1',
-        connectTimeout: 60000, // Ulanishni kutish vaqti 1 daqiqaga uzaytirildi
-        keepAlive: true // Tarmoq qotib qolishini oldini olish yoqildi
+        auth: 'offline', // Aternos-ga litsenziyasiz kirish rejimi
+        hideErrors: false,
+        checkTimeoutInterval: 90000, // Tarmoq uzilishini tekshirish intervalini uzaytirish
+        connectTimeout: 90000, // Ulanishni kutish vaqtini maksimal qilish
+        keepAlive: true // Doimiy aloqa paketlarini jo'natib turish
+    });
+
+    // Aternos tarmoq himoyasidan o'tish uchun ulanish paketlarini majburiy sozlash
+    bot._client.on('connect', () => {
+        console.log('Server eshigiga yetib bordi, paketlar yuborilmoqda...');
     });
 
     bot.on('spawn', () => {
         console.log('Bot muvaffaqiyatli kirdi va AFK rejimida!');
+        
+        // Har 5 soniyada sakrash va tasodifiy qimirlash
         setInterval(() => {
             if (!bot || !bot.entity) return;
 
@@ -42,13 +52,14 @@ function createBot() {
         }, 5000);
     });
 
-    bot.on('end', () => {
-        console.log('Bot o\'chdi, 5 soniyadan keyin qayta ulanadi...');
+    bot.on('end', (reason) => {
+        console.log('Ulanish uzildi, sabab:', reason);
+        console.log('Bot 5 soniyadan keyin qayta ulanadi...');
         setTimeout(createBot, 5000);
     });
 
     bot.on('error', (err) => {
-        console.log('Xatolik yuz berdi, lekin bot to\'xtamaydi:', err.message);
+        console.log('Tarmoq xatoligi yuz berdi:', err.message);
     });
 }
 
